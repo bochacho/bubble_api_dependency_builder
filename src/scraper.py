@@ -1,6 +1,7 @@
 import re
 from playwright.sync_api import Playwright, sync_playwright, expect
 import time
+import os
 
 def run(playwright: Playwright) -> None:
     browser = playwright.chromium.launch(headless=False)
@@ -18,27 +19,48 @@ def run(playwright: Playwright) -> None:
     
     panelSelector = 'div.custom-plugin-panel.apiconnector2 div.call-panel.bubble-ui.green-box';
     panels = page.locator(panelSelector)
-    all_panels = panels.all();
+    all_panels = panels.all()
 
     for item in all_panels:
         item.get_by_text('expand').first.click()
         item.get_by_text('expand all calls').click()
         
-        init_locators = item.get_by_text('Manually enter API response')
-        init_buttons = init_locators.all()
+        # ===============================================================
+        # Using Btns
+        # init_locators = item.get_by_text('Manually enter API response')
+        # init_buttons = init_locators.all()
 
-        for btn in init_buttons:
-            btn.click()
-            # Wait for the animation to complete
+        # for btn in init_buttons:
+        #     btn.click()
+        #     # Wait for the animation to complete
+        #     popup = page.locator('div.modal-popup.apiconnector-json-popup')
+        #     popup.locator('div.btn-save').click()
+
+        #     break
+        # ===============================================================
+
+        subPanelSelector = 'div.sub-call-panel'
+        subPanels = item.locator(subPanelSelector).all()
+        
+        for subPanel in subPanels:
+            init_btn = subPanel.get_by_text('Manually enter API response')
+            init_btn.click()
             popup = page.locator('div.modal-popup.apiconnector-json-popup')
             popup.locator('div.btn-save').click()
-            # popup.wait_for(state="visible")
+            
+            snapshot = page.content()
+            with open('src/content.html', 'w', encoding='utf-8') as file:
+                file.write(snapshot)
+                
+            # popup = page.locator('div.modal-popup.apiconnector-json-popup')
+            # fieldDivs = popup.locator('div.field-zone.sub').all()
+            # for field in fieldDivs:
+            #     fieldName = field.locator('div.field-name').text_context()
+            #     print(fieldName)
+            #     break
 
-            # # Wait for the animation class to be removed
-            # page.locator('div.modal-popup.apiconnector-json-popup.velocity-animating').wait_for(state="hidden", timeout=2000)
-
-            # page.locator('div.btn-save').click(force=True)
             break
+
         break
 
 
